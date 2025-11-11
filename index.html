@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Волны с увеличенным расстоянием</title>
+    <style>
+        /* Убираем отступы и скрываем прокрутку */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            /* Градиентный фон */
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        /* Canvas будет нашим холстом для рисования волн */
+        #waveCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    
+    <canvas id="waveCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('waveCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Функция для установки размера холста по размеру окна
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        // Вызываем при загрузке и при изменении размера окна
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // --- НАСТРОЙКИ ДЛЯ ОДИНАКОВЫХ ВОЛН ---
+        const masterWave = {
+            amplitude: 50,      // Высота изгиба
+            frequency: 0.004,   // Ширина изгиба
+            speed: 0.0012,      // Скорость движения
+            lineWidth: 2.5      // Толщина линии
+        };
+
+        // --- МАССИВ ВОЛН С УДВОЕННЫМ РАССТОЯНИЕМ ---
+        // Шаг yOffset теперь 0.2, поэтому количество волн уменьшено до 5
+        const waves = [
+            {
+                yOffset: 0.1, // Положение по высоте
+                color: 'rgba(255, 255, 255, 0.7)', // Прозрачность
+                ...masterWave // Копируем все параметры из masterWave
+            },
+            {
+                yOffset: 0.3,
+                color: 'rgba(255, 255, 255, 0.6)',
+                ...masterWave
+            },
+            {
+                yOffset: 0.5,
+                color: 'rgba(255, 255, 255, 0.5)',
+                ...masterWave
+            },
+            {
+                yOffset: 0.7,
+                color: 'rgba(255, 255, 255, 0.4)',
+                ...masterWave
+            },
+            {
+                yOffset: 0.9,
+                color: 'rgba(255, 255, 255, 0.3)',
+                ...masterWave
+            }
+        ];
+
+        let time = 0; // Переменная времени для анимации
+
+        // Главная функция, которая рисует анимацию
+        function animate() {
+            // Очищаем холст перед отрисовкой нового кадра
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Проходим по каждой волне в нашем массиве настроек
+            waves.forEach(wave => {
+                ctx.beginPath();
+                ctx.moveTo(-5, canvas.height * wave.yOffset); 
+                
+                // Устанавливаем стиль линии
+                ctx.strokeStyle = wave.color;
+                ctx.lineWidth = wave.lineWidth;
+                ctx.lineCap = 'round'; // Сглаживаем концы линии
+                ctx.lineJoin = 'round'; // Сглаживаем изгибы
+
+                // Проходим по всей ширине экрана, рисуя сегменты волны
+                for (let x = -5; x < canvas.width + 5; x++) {
+                    const y = canvas.height * wave.yOffset + Math.sin(x * wave.frequency + time * wave.speed) * wave.amplitude;
+                    ctx.lineTo(x, y);
+                }
+                
+                // Рисуем созданную линию
+                ctx.stroke();
+            });
+
+            // Увеличиваем время, чтобы волны двигались в следующем кадре
+            time++;
+
+            // Запрашиваем у браузера отрисовку следующего кадра
+            requestAnimationFrame(animate);
+        }
+
+        // Запускаем анимацию!
+        animate();
+    </script>
+</body>
+</html>
